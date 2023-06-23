@@ -28,7 +28,7 @@ from cflib.crazyflie.log import LogConfig
 from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
 from cflib.crazyflie.syncLogger import SyncLogger
 
-SwarmPosition = namedtuple('SwarmPosition', 'x y z')
+SwarmPosition = namedtuple('SwarmPosition', 'x y vx vy')
 
 
 class _Factory:
@@ -113,17 +113,20 @@ class Swarm:
         self.close_links()
 
     def __get_estimated_position(self, scf):
-        log_config = LogConfig(name='stateEstimate', period_in_ms=10)
+        log_config = LogConfig(name='stateEstimate', period_in_ms=50)
         log_config.add_variable('stateEstimate.x', 'float')
         log_config.add_variable('stateEstimate.y', 'float')
-        log_config.add_variable('stateEstimate.z', 'float')
-
+        #log_config.add_variable('stateEstimate.z', 'float')
+        log_config.add_variable('stateEstimate.vx','float')
+        log_config.add_variable('stateEstimate.vy', 'float')
         with SyncLogger(scf, log_config) as logger:
             for entry in logger:
                 x = entry[1]['stateEstimate.x']
                 y = entry[1]['stateEstimate.y']
-                z = entry[1]['stateEstimate.z']
-                self._positions[scf.cf.link_uri] = SwarmPosition(x, y, z)
+                #z = entry[1]['stateEstimate.z']
+                vx = entry[1]['stateEstimate.vx']
+                vy = entry[1]['stateEstimate.vy']
+                self._positions[scf.cf.link_uri] = SwarmPosition(x, y, vx, vy)
                 break
 
     def get_estimated_positions(self):
